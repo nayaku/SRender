@@ -27,7 +27,7 @@ void Shader::set(const std::string& name, int value) const
 
 void Shader::set(const std::string& name, float value) const
 {
-	glUniform1f(glGetAttribLocation(ID, name.c_str()), value);
+	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
 void Shader::Load(const GLchar* vertexPath, const GLchar* fragmentPath)

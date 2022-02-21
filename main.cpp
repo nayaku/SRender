@@ -101,6 +101,7 @@ void build()
 
 	pOurShader = new Shader("shader\\shader.vert", "shader\\shader.frag");
 
+
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	// 绑定
@@ -119,6 +120,8 @@ void build()
 
 	glBindVertexArray(0);
 }
+float offset = -1.0f;
+
 void Render()
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -127,6 +130,13 @@ void Render()
 	// 激活着色器
 	//glUseProgram(shaderProgram);
 	pOurShader->use();
+
+	static float preTime = glfwGetTime();
+	float curTime = glfwGetTime();
+	offset += (curTime - preTime) / 5.0f;
+	preTime = curTime;
+
+	pOurShader->set("xOffset", offset);
 
 	// 绘制三角形
 	glBindVertexArray(VAO);
