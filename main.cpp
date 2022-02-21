@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <clocale>
 #include <iostream>
+#include "Shader.h"
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void build();
@@ -17,26 +18,10 @@ float vertices[] = {
 	-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // ×óÏÂ
 	 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // ¶¥²¿
 };
-
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec3 aColor;\n"
-"out vec3 ourColor;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"   ourColor = aColor;\n"
-"}\0";
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"in vec3 ourColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(ourColor,1.0);\n"
-"}\n\0";
+Shader* pOurShader = NULL;
 
 unsigned int VBO, VAO;
-unsigned int shaderProgram;
+//unsigned int shaderProgram;
 
 int main()
 {
@@ -75,8 +60,8 @@ int main()
 
 	glViewport(0, 0, 800, 600);
 
-
 	build();
+
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -92,7 +77,9 @@ int main()
 	// Delete
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteProgram(shaderProgram);
+	glDeleteProgram(pOurShader->ID);
+	delete pOurShader;
+	//glDeleteProgram(shaderProgram);
 
 
 	glfwTerminate();
@@ -107,51 +94,12 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 }
+
 void build()
 {
-	// ¶¥µã×ÅÉ«Æ÷
-	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-	// ´íÎóÅÐ¶Ï
-	int success;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		wprintf(L"¶¥µã×ÅÉ«Æ÷±àÒëÊ§°Ü£¡\n");
-	}
+	//Shader ourShader("shader.vert", "shader.frag");
 
-	// Æ¬¶Î×ÅÉ«Æ÷
-	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-	// ´íÎóÅÐ¶Ï
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		wprintf(L"Æ¬¶Î×ÅÉ«Æ÷±àÒëÊ§°Ü£¡\n");
-	}
-
-	// Á´½Ó
-	shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-	// ´íÎóÅÐ¶Ï
-	glGetShaderiv(shaderProgram, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(shaderProgram, 512, NULL, infoLog);
-		wprintf(L"Æ¬¶Î×ÅÉ«Æ÷±àÒëÊ§°Ü£¡\n");
-	}
-
-	// É¾³ý
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
+	pOurShader = new Shader("shader\\shader.vert", "shader\\shader.frag");
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -170,7 +118,6 @@ void build()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
-
 }
 void Render()
 {
@@ -178,12 +125,8 @@ void Render()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// ¼¤»î×ÅÉ«Æ÷
-	glUseProgram(shaderProgram);
-
-	float timeValue = glfwGetTime();
-	float greenValue = sin(timeValue) / 5.0f + 0.5f;
-	int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-	glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+	//glUseProgram(shaderProgram);
+	pOurShader->use();
 
 	// »æÖÆÈý½ÇÐÎ
 	glBindVertexArray(VAO);
