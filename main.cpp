@@ -215,7 +215,7 @@ unsigned int load(const char* path)
 	stbi_image_free(data);
 	return texture;
 }
-float offset = -1.0f;
+float opactity = 0.0f;
 
 void Render()
 {
@@ -232,12 +232,15 @@ void Render()
 	//glUseProgram(shaderProgram);
 	pOurShader->use();
 
-	//static float preTime = glfwGetTime();
-	//float curTime = glfwGetTime();
-	//offset += (curTime - preTime) / 5.0f;
-	//preTime = curTime;
+	static float preTime = glfwGetTime();
+	float curTime = glfwGetTime();
+	if(opactity<=1.0f)
+		opactity += (curTime - preTime) / 5.0f;
+	if (opactity > 1.0f)
+		opactity = 1.0f;
+	preTime = curTime;
 
-	//pOurShader->set("xOffset", offset);
+	pOurShader->set("opacity", opactity);
 
 	// »æÖÆÈý½ÇÐÎ
 	glBindVertexArray(VAO);
