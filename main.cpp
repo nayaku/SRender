@@ -3,6 +3,9 @@
 #include <clocale>
 #include <iostream>
 #include <stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -227,6 +230,12 @@ void Render()
 	glBindTexture(GL_TEXTURE_2D, texture1);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	// 旋转
+	glm::mat4 trans= glm::mat4(1.0f);
+	trans = glm::rotate(trans, glm::radians(90.f), glm::vec3(0.0f, 0.0f, 1.0f));
+	trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+	pOurShader->set("transform", glm::value_ptr(trans));
 
 	// 激活着色器
 	//glUseProgram(shaderProgram);

@@ -12,6 +12,7 @@ public:
 	void set(const std::string& name, bool value) const;
 	void set(const std::string& name, int value) const;
 	void set(const std::string& name, float value) const;
+	void set(const std::string& name, const GLfloat* value) const;
 private:
 	std::string vertexShaderSource;
 	std::string fragmentShaderSource;
