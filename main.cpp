@@ -1,5 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#include <Windows.h>
 #include <clocale>
 #include <iostream>
 #include <stb_image.h>
@@ -7,12 +10,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
+#include "FPSMeter.h"
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void build();
-unsigned int load(const char* path);
 void Render();
 
+HWND hwnd;
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -45,6 +49,7 @@ int main()
 		glfwTerminate();
 		return -1;
 	}
+	hwnd = glfwGetWin32Window(window);
 
 	// 显示窗口
 	glfwMakeContextCurrent(window);
@@ -116,12 +121,17 @@ int main()
 	pOurShader->set("texture1", 0);
 	pOurShader->set("texture2", 1);
 
+	FPSMeter fpsMeter(hwnd, L"SGE Render");
+
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
 
+		fpsMeter.TickStart();
 		// 渲染指令
 		Render();
+		fpsMeter.TickEnd();
+
 		// 检查并调用事件，交换缓冲
 		glfwSwapBuffers(window);
 		glfwPollEvents();
