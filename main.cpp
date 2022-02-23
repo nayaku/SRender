@@ -26,6 +26,7 @@ Shader* pOurShader = NULL;
 unsigned int VBO, VAO, EBO;
 unsigned int texture1, texture2;
 //unsigned int shaderProgram;
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 
 int main()
 {
@@ -121,7 +122,10 @@ int main()
 	pOurShader->set("texture1", 0);
 	pOurShader->set("texture2", 1);
 
-	FPSMeter fpsMeter(hwnd, L"SGE Render");
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+	pOurShader->set("projection", projection);
+
+	FPSMeter fpsMeter(hwnd, L"SRender");
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -261,28 +265,18 @@ void Render()
 
 	// 激活着色器
 	pOurShader->use();
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+
 	glm::mat4 view = glm::mat4(1.0f);
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-	glm::mat4 projection = glm::mat4(1.0f);
-	projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+	float radius = 10.f;
+	float camX = static_cast<float>(sin(glfwGetTime()) * radius);
+	float camZ = static_cast<float>(cos(glfwGetTime()) * radius);
+	view = glm::lookAt(glm::vec3(camX, 0.0f, camZ),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f));
+	pOurShader->set("view", view);
 
-	pOurShader->set("model", glm::value_ptr(model));
-	pOurShader->set("view", glm::value_ptr(view));
-	pOurShader->set("projection", glm::value_ptr(projection));
 
-
-
-	static float preTime = glfwGetTime();
-	float curTime = glfwGetTime();
-	if (opactity <= 0.8f)
-		opactity += (curTime - preTime) / 5.0f;
-	if (opactity > 0.8f)
-		opactity = 0.8f;
-	preTime = curTime;
-
-	pOurShader->set("opacity", opactity);
+	pOurShader->set("opacity", static_cast<float>((-cos(glfwGetTime())+1)/2.0f));
 
 	// 绘制
 	glBindVertexArray(VAO);
@@ -292,7 +286,7 @@ void Render()
 		model = glm::translate(model, cubePositions[i]);
 		float angle = 20.f * (i+1);
 		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.7f, 0.3f, 0.3f));
-		pOurShader->set("model", glm::value_ptr(model));
+		pOurShader->set("model", model);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
