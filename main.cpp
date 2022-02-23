@@ -231,12 +231,16 @@ void Render()
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, texture2);
 
-	// 旋转
-	glm::mat4 trans= glm::mat4(1.0f);
-	trans = glm::rotate(trans, -(float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-	trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-	
-	pOurShader->set("transform", glm::value_ptr(trans));
+	glm::mat4 model=glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 view = glm::mat4(1.0f);
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+	glm::mat4 projection = glm::mat4(1.0f);
+	projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+
+	pOurShader->set("model", glm::value_ptr(model));
+	pOurShader->set("view", glm::value_ptr(view));
+	pOurShader->set("projection", glm::value_ptr(projection));
 
 	// 激活着色器
 	//glUseProgram(shaderProgram);
@@ -254,14 +258,5 @@ void Render()
 
 	// 绘制
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	
-	// 第二个
-	trans = glm::mat4(1.0f);
-	trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
-	float scaleAmount = sin(glfwGetTime());
-	trans = glm::scale(trans, glm::vec3(scaleAmount, -scaleAmount, scaleAmount));
-	pOurShader->set("transform", glm::value_ptr(trans));
-	// 绘制第二个
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
