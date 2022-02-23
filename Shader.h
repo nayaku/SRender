@@ -18,4 +18,3 @@ private:
 	void Load(const GLchar* vertexPath, const GLchar* fragmentPath);
 	void Build();
 };
-

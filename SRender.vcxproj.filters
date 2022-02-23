@@ -27,6 +27,9 @@
     <ClCompile Include="Shader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="stb_image.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -34,11 +37,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="shader\shader.frag">
+    <None Include="shader\shader.frag">
       <Filter>shader</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="shader\shader.vert">
+    </None>
+    <None Include="shader\shader.vert">
       <Filter>shader</Filter>
-    </CopyFileToFolders>
+    </None>
   </ItemGroup>
 </Project>
