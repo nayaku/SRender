@@ -233,8 +233,9 @@ void Render()
 
 	// 旋转
 	glm::mat4 trans= glm::mat4(1.0f);
-	trans = glm::rotate(trans, glm::radians(90.f), glm::vec3(0.0f, 0.0f, 1.0f));
-	trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+	trans = glm::rotate(trans, -(float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+	trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+	
 	pOurShader->set("transform", glm::value_ptr(trans));
 
 	// 激活着色器
@@ -243,16 +244,24 @@ void Render()
 
 	static float preTime = glfwGetTime();
 	float curTime = glfwGetTime();
-	if(opactity<=1.0f)
+	if(opactity<=0.8f)
 		opactity += (curTime - preTime) / 5.0f;
-	if (opactity > 1.0f)
-		opactity = 1.0f;
+	if (opactity > 0.8f)
+		opactity = 0.8f;
 	preTime = curTime;
 
 	pOurShader->set("opacity", opactity);
 
-	// 绘制三角形
+	// 绘制
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+	
+	// 第二个
+	trans = glm::mat4(1.0f);
+	trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
+	float scaleAmount = sin(glfwGetTime());
+	trans = glm::scale(trans, glm::vec3(scaleAmount, -scaleAmount, scaleAmount));
+	pOurShader->set("transform", glm::value_ptr(trans));
+	// 绘制第二个
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
