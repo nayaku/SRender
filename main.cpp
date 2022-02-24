@@ -11,6 +11,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
 #include "FPSMeter.h"
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void build();
@@ -20,6 +21,7 @@ HWND hwnd;
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+float cameraSpeed = 0.05f;
 
 Shader* pOurShader = NULL;
 
@@ -27,6 +29,12 @@ unsigned int VBO, VAO, EBO;
 unsigned int texture1, texture2;
 //unsigned int shaderProgram;
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+float pitch = 0.0f, yaw = -90.0f;
+float lastX = 800.0f / 2.0f, lastY = 600.0f / 2.0f;
+bool firstMouse = true;
 
 int main()
 {
@@ -52,9 +60,16 @@ int main()
 	}
 	hwnd = glfwGetWin32Window(window);
 
+
+
 	// 显示窗口
 	glfwMakeContextCurrent(window);
+	// 捕获鼠标
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// 回调
+	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
 
 	// GLAD初始化
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -152,14 +167,63 @@ int main()
 	glfwTerminate();
 	return 0;
 }
+
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+	float xOffset = xpos - lastX;
+	float yOffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	float sensitivity = 0.05f;
+	xOffset *= sensitivity;
+	yOffset *= sensitivity;
+
+	yaw += xOffset;
+	pitch += yOffset;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+	front.y = sin(glm::radians(pitch));
+	front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+	cameraFront = glm::normalize(front);
+}
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
+
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		cameraPos += cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		cameraPos -= cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		cameraPos += cameraUp * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+		cameraPos -= cameraUp * cameraSpeed;
+
+
 }
 
 void build()
@@ -266,25 +330,19 @@ void Render()
 	// 激活着色器
 	pOurShader->use();
 
-	glm::mat4 view = glm::mat4(1.0f);
-	float radius = 10.f;
-	float camX = static_cast<float>(sin(glfwGetTime()) * radius);
-	float camZ = static_cast<float>(cos(glfwGetTime()) * radius);
-	view = glm::lookAt(glm::vec3(camX, 0.0f, camZ),
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	pOurShader->set("view", view);
 
 
-	pOurShader->set("opacity", static_cast<float>((-cos(glfwGetTime())+1)/2.0f));
+	pOurShader->set("opacity", static_cast<float>((-cos(glfwGetTime()) + 1) / 2.0f));
 
 	// 绘制
 	glBindVertexArray(VAO);
 	for (int i = 0; i < 10; i++)
 	{
-		glm::mat4 model=glm::mat4(1.0f);
+		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, cubePositions[i]);
-		float angle = 20.f * (i+1);
+		float angle = 20.f * (i + 1);
 		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.7f, 0.3f, 0.3f));
 		pOurShader->set("model", model);
 
