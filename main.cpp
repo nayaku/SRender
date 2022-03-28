@@ -106,7 +106,7 @@ int main()
 			elapsedTime = 0.25;
 		delay += elapsedTime;
 		while (delay >= deltaTime) {
-			
+
 			delay -= deltaTime;
 		}
 		processInput(window);
@@ -119,7 +119,7 @@ int main()
 		glfwPollEvents();
 		double finTime = tb.time + 1.0 * tb.millitm / 1000;
 		double processTime = finTime - curTime;
-		sleep(std::max((deltaTime - processTime) * 1000, 0.0) );
+		sleep(std::max((deltaTime - processTime) * 1000, 0.0));
 	}
 
 	// Delete
@@ -201,47 +201,47 @@ void build()
 
 
 	float vertices[] = {
-			-0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f,  0.5f, -0.5f,
-			 0.5f,  0.5f, -0.5f,
-			-0.5f,  0.5f, -0.5f,
-			-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-			-0.5f, -0.5f,  0.5f,
-			 0.5f, -0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f,  0.5f,
-			-0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
 
-			-0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f, -0.5f,
-			-0.5f, -0.5f, -0.5f,
-			-0.5f, -0.5f, -0.5f,
-			-0.5f, -0.5f,  0.5f,
-			-0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-			 0.5f,  0.5f,  0.5f,
-			 0.5f,  0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-			-0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f,  0.5f,
-			 0.5f, -0.5f,  0.5f,
-			-0.5f, -0.5f,  0.5f,
-			-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-			-0.5f,  0.5f, -0.5f,
-			 0.5f,  0.5f, -0.5f,
-			 0.5f,  0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f, -0.5f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 	};
 
 	glGenVertexArrays(1, &cubeVAO);
@@ -253,16 +253,19 @@ void build()
 
 	glBindVertexArray(cubeVAO);
 	// µã
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	// µÆ
 	glGenVertexArrays(1, &lightCubeVAO);
 	glBindVertexArray(lightCubeVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
 }
 float opactity = 0.0f;
 glm::vec3 cubePositions[] = {
@@ -286,6 +289,7 @@ void Render()
 	pCubeShader->use();
 	pCubeShader->set("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
 	pCubeShader->set("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+	pCubeShader->set("lightPos", lightPos);
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -294,6 +298,8 @@ void Render()
 
 	glm::mat4 model = glm::mat4(1.0f);
 	pCubeShader->set("model", model);
+
+	pLightShader->set("lightPos", lightPos);
 
 	glBindVertexArray(cubeVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
