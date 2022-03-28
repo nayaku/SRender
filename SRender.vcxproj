@@ -147,20 +147,24 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stb_image.cpp" />
+    <ClCompile Include="timmer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FPSMeter.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="timmer.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader\shader.frag">
+    <None Include="shader\cube.frag">
       <FileType>Document</FileType>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\shader</DestinationFolders>
     </None>
-    <None Include="shader\shader.vert">
+    <None Include="shader\cube.vert">
       <FileType>Document</FileType>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\shader</DestinationFolders>
     </None>
+    <None Include="shader\light.frag" />
+    <None Include="shader\light.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

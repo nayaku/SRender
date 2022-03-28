@@ -36,6 +36,11 @@ void Shader::set(const std::string& name, const glm::mat4& mat) const
 	glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
+void Shader::set(const std::string& name, const glm::vec3& val) const
+{
+	glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &val[0]);
+}
+
 void Shader::Load(const GLchar* vertexPath, const GLchar* fragmentPath)
 {
 	std::ifstream vsFile;

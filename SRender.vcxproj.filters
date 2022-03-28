@@ -33,6 +33,9 @@
     <ClCompile Include="FPSMeter.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="timmer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -41,12 +44,21 @@
     <ClInclude Include="FPSMeter.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="timmer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader\shader.frag">
+    <None Include="shader\cube.frag">
       <Filter>shader</Filter>
     </None>
-    <None Include="shader\shader.vert">
+    <None Include="shader\cube.vert">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="shader\light.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="shader\light.vert">
       <Filter>shader</Filter>
     </None>
   </ItemGroup>

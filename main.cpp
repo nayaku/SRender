@@ -11,6 +11,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
 #include "FPSMeter.h"
+#include <sys/timeb.h>
+#include "timmer.h"
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -23,9 +25,10 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 float cameraSpeed = 0.05f;
 
-Shader* pOurShader = NULL;
+Shader* pCubeShader = NULL, * pLightShader = NULL;
 
-unsigned int VBO, VAO, EBO;
+double deltaTime = 1.0 / 60.0;
+unsigned int VBO, cubeVAO, lightCubeVAO;
 unsigned int texture1, texture2;
 //unsigned int shaderProgram;
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -35,6 +38,8 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 float pitch = 0.0f, yaw = -90.0f;
 float lastX = 800.0f / 2.0f, lastY = 600.0f / 2.0f;
 bool firstMouse = true;
+
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 int main()
 {
@@ -84,69 +89,27 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	build();
 
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	// 为当前绑定的纹理对象设置环绕、过滤方式
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// 加载
-	int width, height, nrChannels;
-	stbi_set_flip_vertically_on_load(true);
-	unsigned char* data = stbi_load("res\\container.jpg", &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		wprintf(L"加载纹理失败\n");
-	}
-	stbi_image_free(data);
-
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	// 为当前绑定的纹理对象设置环绕、过滤方式
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// 加载
-	data = stbi_load("res/awesomeface.png", &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		wprintf(L"加载纹理失败\n");
-	}
-	stbi_image_free(data);
-
-
-	//texture1 = load("res/container.jpg");
-	//texture2 = load("res/awesomeface.png");
-	pOurShader->use();
-	// either set it manually like so:
-	//glUniform1i(glGetUniformLocation(pOurShader->ID, "texture1"), 0);
-	//glUniform1i(glGetUniformLocation(pOurShader->ID, "texture2"), 1);
-	// or set it via the texture class
-	pOurShader->set("texture1", 0);
-	pOurShader->set("texture2", 1);
-
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-	pOurShader->set("projection", projection);
 
 	FPSMeter fpsMeter(hwnd, L"SRender");
-
+	timeb tb;
+	ftime(&tb);
+	double prevTime = tb.time + 1.0 * tb.millitm / 1000;
+	double delay = 0;
 	while (!glfwWindowShouldClose(window))
 	{
-		processInput(window);
-
 		fpsMeter.TickStart();
+		double curTime = tb.time + 1.0 * tb.millitm / 1000;
+		double elapsedTime = curTime - prevTime;
+		prevTime = curTime;
+		// 如果游戏处于调试状态就别跳帧了
+		if (elapsedTime > 0.25)
+			elapsedTime = 0.25;
+		delay += elapsedTime;
+		while (delay >= deltaTime) {
+			
+			delay -= deltaTime;
+		}
+		processInput(window);
 		// 渲染指令
 		Render();
 		fpsMeter.TickEnd();
@@ -154,14 +117,19 @@ int main()
 		// 检查并调用事件，交换缓冲
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		double finTime = tb.time + 1.0 * tb.millitm / 1000;
+		double processTime = finTime - curTime;
+		sleep(std::max((deltaTime - processTime) * 1000, 0.0) );
 	}
 
 	// Delete
-	glDeleteVertexArrays(1, &VAO);
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &lightCubeVAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
-	glDeleteProgram(pOurShader->ID);
-	delete pOurShader;
+	glDeleteProgram(pCubeShader->ID);
+	glDeleteProgram(pLightShader->ID);
+	delete pCubeShader;
+	delete pLightShader;
 	//glDeleteProgram(shaderProgram);
 
 	glfwTerminate();
@@ -228,80 +196,73 @@ void processInput(GLFWwindow* window)
 
 void build()
 {
-	//Shader ourShader("shader.vert", "shader.frag");
+	pCubeShader = new Shader("shader\\cube.vert", "shader\\cube.frag");
+	pLightShader = new Shader("shader\\light.vert", "shader\\light.frag");
 
-	pOurShader = new Shader("shader\\shader.vert", "shader\\shader.frag");
 
-	//float vertices[] = {
-	//	//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-	//		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
-	//		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
-	//		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
-	//		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
-	//};
 	float vertices[] = {
-	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+			-0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f,  0.5f, -0.5f,
+			 0.5f,  0.5f, -0.5f,
+			-0.5f,  0.5f, -0.5f,
+			-0.5f, -0.5f, -0.5f,
 
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+			-0.5f, -0.5f,  0.5f,
+			 0.5f, -0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f,  0.5f,
+			-0.5f, -0.5f,  0.5f,
 
-	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			-0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f, -0.5f,
+			-0.5f, -0.5f, -0.5f,
+			-0.5f, -0.5f, -0.5f,
+			-0.5f, -0.5f,  0.5f,
+			-0.5f,  0.5f,  0.5f,
 
-	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			 0.5f,  0.5f,  0.5f,
+			 0.5f,  0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
 
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f,  0.5f,
+			 0.5f, -0.5f,  0.5f,
+			-0.5f, -0.5f,  0.5f,
+			-0.5f, -0.5f, -0.5f,
 
-	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+			-0.5f,  0.5f, -0.5f,
+			 0.5f,  0.5f, -0.5f,
+			 0.5f,  0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f, -0.5f,
 	};
 
-	glGenVertexArrays(1, &VAO);
+	glGenVertexArrays(1, &cubeVAO);
 	glGenBuffers(1, &VBO);
-	// 绑定
-	glBindVertexArray(VAO);
 
+	// 绑定
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+	glBindVertexArray(cubeVAO);
 	// 点
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// 纹理
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	// 灯
+	glGenVertexArrays(1, &lightCubeVAO);
+	glBindVertexArray(lightCubeVAO);
 
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 }
 float opactity = 0.0f;
 glm::vec3 cubePositions[] = {
@@ -318,34 +279,34 @@ glm::vec3 cubePositions[] = {
 };
 void Render()
 {
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// 绑定纹理
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-
 	// 激活着色器
-	pOurShader->use();
+	pCubeShader->use();
+	pCubeShader->set("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+	pCubeShader->set("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-	pOurShader->set("view", view);
+	pCubeShader->set("projection", projection);
+	pCubeShader->set("view", view);
 
+	glm::mat4 model = glm::mat4(1.0f);
+	pCubeShader->set("model", model);
 
-	pOurShader->set("opacity", static_cast<float>((-cos(glfwGetTime()) + 1) / 2.0f));
+	glBindVertexArray(cubeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	// 绘制
-	glBindVertexArray(VAO);
-	for (int i = 0; i < 10; i++)
-	{
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, cubePositions[i]);
-		float angle = 20.f * (i + 1);
-		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.7f, 0.3f, 0.3f));
-		pOurShader->set("model", model);
+	// 渲染灯
+	pLightShader->use();
+	pCubeShader->set("projection", projection);
+	pCubeShader->set("view", view);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, lightPos);
+	model = glm::scale(model, glm::vec3(0.2f));
+	pLightShader->set("model", model);
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
+	glBindVertexArray(lightCubeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 }
