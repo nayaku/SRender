@@ -299,7 +299,8 @@ void Render()
 	glm::mat4 model = glm::mat4(1.0f);
 	pCubeShader->set("model", model);
 
-	pLightShader->set("lightPos", lightPos);
+	pCubeShader->set("lightPos", lightPos);
+	pCubeShader->set("viewPos", cameraPos);
 
 	glBindVertexArray(cubeVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
