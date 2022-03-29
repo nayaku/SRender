@@ -287,9 +287,6 @@ void Render()
 
 	// ¼¤»î×ÅÉ«Æ÷
 	pCubeShader->use();
-	pCubeShader->set("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-	pCubeShader->set("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-	pCubeShader->set("lightPos", lightPos);
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -299,8 +296,18 @@ void Render()
 	glm::mat4 model = glm::mat4(1.0f);
 	pCubeShader->set("model", model);
 
-	pCubeShader->set("lightPos", lightPos);
+
 	pCubeShader->set("viewPos", cameraPos);
+
+	pCubeShader->set("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+	pCubeShader->set("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+	pCubeShader->set("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+	pCubeShader->set("material.shiniess", 32.0f);
+
+	pCubeShader->set("light.position", lightPos);
+	pCubeShader->set("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+	pCubeShader->set("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	pCubeShader->set("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
 	glBindVertexArray(cubeVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
