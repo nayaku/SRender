@@ -316,8 +316,10 @@ void Render()
 	pCubeShader->set("light.diffuse", glm::vec3(0.5f,0.5f,0.5f));
 	pCubeShader->set("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
-	pCubeShader->set("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-
+	//pCubeShader->set("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+	pCubeShader->set("light.constant", 1.0f);
+	pCubeShader->set("light.linear", 0.09f);
+	pCubeShader->set("light.quadratic", 0.032f);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, diffuseMap);
 
