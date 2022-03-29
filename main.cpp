@@ -285,6 +285,14 @@ void Render()
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// 设置灯光颜色
+	glm::vec3 lightColor;
+	lightColor.x = sin(glfwGetTime() * 2.0f);
+	lightColor.y = sin(glfwGetTime() * 0.7f);
+	lightColor.z = sin(glfwGetTime() * 1.3f);
+	glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
+	glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+
 	// 激活着色器
 	pCubeShader->use();
 
@@ -305,8 +313,8 @@ void Render()
 	pCubeShader->set("material.shiniess", 32.0f);
 
 	pCubeShader->set("light.position", lightPos);
-	pCubeShader->set("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-	pCubeShader->set("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	pCubeShader->set("light.ambient", ambientColor);
+	pCubeShader->set("light.diffuse", diffuseColor);
 	pCubeShader->set("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
 	glBindVertexArray(cubeVAO);
