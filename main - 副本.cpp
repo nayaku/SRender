@@ -13,7 +13,9 @@
 #include "FPSMeter.h"
 #include <sys/timeb.h>
 #include "timmer.h"
+#include "Camera.h"
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void build();
@@ -32,11 +34,9 @@ double deltaTime = 1.0 / 60.0;
 unsigned int VBO, cubeVAO, lightCubeVAO;
 unsigned int texture1, texture2;
 //unsigned int shaderProgram;
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-float pitch = 0.0f, yaw = -90.0f;
+// Camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = 800.0f / 2.0f, lastY = 600.0f / 2.0f;
 bool firstMouse = true;
 
@@ -67,7 +67,6 @@ int main()
 		return -1;
 	}
 	hwnd = glfwGetWin32Window(window);
-
 
 
 	// 显示窗口
@@ -158,23 +157,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 	lastX = xpos;
 	lastY = ypos;
 
-	float sensitivity = 0.05f;
-	xOffset *= sensitivity;
-	yOffset *= sensitivity;
-
-	yaw += xOffset;
-	pitch += yOffset;
-
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
-
-	glm::vec3 front;
-	front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
-	front.y = sin(glm::radians(pitch));
-	front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-	cameraFront = glm::normalize(front);
+	camera.ProcessMouseMovement(xOffset, yOffset);
 }
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -185,18 +168,19 @@ void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(FORWARD, 1 / 60.0f);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(BACKWARD, 1 / 60.0f);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(LEFT, 1 / 60.0f);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		cameraPos += cameraUp * cameraSpeed;
-	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-		cameraPos -= cameraUp * cameraSpeed;
+		camera.ProcessKeyboard(RIGHT, 1 / 60.0f);
+	//if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	//	cameraPos += cameraUp * cameraSpeed;
+	//if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+	//	cameraPos -= cameraUp * cameraSpeed;
 
 
 }
@@ -298,33 +282,32 @@ void Render()
 
 	// 激活着色器
 	pCubeShader->use();
-	pCubeShader->set("light.position", cameraPos);
-	pCubeShader->set("light.direction", cameraFront);
-	pCubeShader->set("light.cutOff", glm::cos(glm::radians(12.5f)));
-	pCubeShader->set("viewPos", cameraPos);
-
-	pCubeShader->set("light.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
-	pCubeShader->set("light.diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
-	pCubeShader->set("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-	pCubeShader->set("light.constant", 1.0f);
-	pCubeShader->set("light.linear", 0.09f);
-	pCubeShader->set("light.quadratic", 0.032f);
-
-	pCubeShader->set("material.shiniess", 32.0f);
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-	glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+	glm::mat4 view = camera.GetViewMatrix();
 	pCubeShader->set("projection", projection);
 	pCubeShader->set("view", view);
 
 	glm::mat4 model = glm::mat4(1.0f);
 	pCubeShader->set("model", model);
-	
-	//pCubeShader->set("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
 
+
+	pCubeShader->set("viewPos", cameraPos);
+	pCubeShader->set("material.shiniess", 32.0f);
+
+	pCubeShader->set("light.position", cameraPos);
+	pCubeShader->set("light.direction", cameraFront);
+	pCubeShader->set("light.cutOff", glm::cos(glm::radians(12.5f)));
+	pCubeShader->set("light.ambient", glm::vec3(0.1f,0.1f,0.1f));
+	pCubeShader->set("light.diffuse", glm::vec3(0.8f,0.8f,0.8f));
+	pCubeShader->set("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+
+	//pCubeShader->set("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+	pCubeShader->set("light.constant", 1.0f);
+	pCubeShader->set("light.linear", 0.09f);
+	pCubeShader->set("light.quadratic", 0.032f);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, diffuseMap);
-
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, specularMap);
 
@@ -334,8 +317,8 @@ void Render()
 	{
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, cubePositions[i]);
-		float angle = 20.0f * i;
-		model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+		//float angle = 20.0f * i;
+		//model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 		pCubeShader->set("model", model);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
