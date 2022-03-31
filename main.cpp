@@ -42,7 +42,7 @@ bool firstMouse = true;
 
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
-unsigned int diffuseMap,specularMap;
+unsigned int diffuseMap, specularMap;
 
 int main()
 {
@@ -301,6 +301,7 @@ void Render()
 	pCubeShader->set("light.position", cameraPos);
 	pCubeShader->set("light.direction", cameraFront);
 	pCubeShader->set("light.cutOff", glm::cos(glm::radians(12.5f)));
+	pCubeShader->set("light.outerCutOff", glm::cos(glm::radians(17.5f)));
 	pCubeShader->set("viewPos", cameraPos);
 
 	pCubeShader->set("light.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
@@ -310,7 +311,7 @@ void Render()
 	pCubeShader->set("light.linear", 0.09f);
 	pCubeShader->set("light.quadratic", 0.032f);
 
-	pCubeShader->set("material.shiniess", 32.0f);
+	pCubeShader->set("material.shininess", 32.0f);
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -319,7 +320,7 @@ void Render()
 
 	glm::mat4 model = glm::mat4(1.0f);
 	pCubeShader->set("model", model);
-	
+
 	//pCubeShader->set("light.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
 
 	glActiveTexture(GL_TEXTURE0);
