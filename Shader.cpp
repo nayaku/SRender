@@ -103,7 +103,7 @@ void Shader::Build()
 	glAttachShader(ID, fragmentShader);
 	glLinkProgram(ID);
 	// ¥ÌŒÛ≈–∂œ
-	glGetShaderiv(ID, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(ID, GL_LINK_STATUS, &success);
 	if (!success)
 	{
 		glGetShaderInfoLog(ID, 512, NULL, infoLog);
