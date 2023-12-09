@@ -143,6 +143,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="EncodeTool.cpp" />
     <ClCompile Include="FPSMeter.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
@@ -152,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="EncodeTool.h" />
     <ClInclude Include="FPSMeter.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="timmer.h" />

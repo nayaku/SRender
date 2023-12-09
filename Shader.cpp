@@ -4,6 +4,7 @@
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
+#include "EncodeTool.h"
 
 Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 {
@@ -80,6 +81,7 @@ void Shader::Build()
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
 		wprintf(L"顶点着色器编译失败！\n");
+		wprintf(L"%s\n", GetWC(infoLog));
 	}
 
 	// 片段着色器
@@ -92,6 +94,7 @@ void Shader::Build()
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		wprintf(L"片段着色器编译失败！\n");
+		wprintf(L"%s\n", GetWC(infoLog));
 	}
 
 	// 链接
@@ -104,7 +107,8 @@ void Shader::Build()
 	if (!success)
 	{
 		glGetShaderInfoLog(ID, 512, NULL, infoLog);
-		wprintf(L"片段着色器编译失败！\n");
+		wprintf(L"链接着色器编译失败！\n");
+		wprintf(L"%s\n", GetWC(infoLog));
 	}
 
 	// 删除

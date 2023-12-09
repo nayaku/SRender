@@ -568,3 +568,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+.vshistory/
