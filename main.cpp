@@ -322,19 +322,13 @@ glm::vec3 pointLightPositions[] = {
 };
 glm::vec3 pointLightColors[] = {
 	glm::vec3(1.0f, 0.6f, 0.0f),
+	glm::vec3(1.0f, 1.0f, 0.0f),
 	glm::vec3(0.0f, 1.0f, 0.0f),
 	glm::vec3(0.0f, 0.0f, 1.0f),
-	glm::vec3(1.0f, 1.0f, 1.0f),
-};
-float pointLightIntensities[] = {
-	0.5f,
-	0.3f,
-	1.0f,
-	0.6f
 };
 void Render()
 {
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClearColor(0.005f, 0.005f, 0.005f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
