@@ -14,12 +14,20 @@
 #include <sys/timeb.h>
 #include "timmer.h"
 #include <format>
+#include "EncodeTool.h"
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void build();
 void Render();
 unsigned int LoadTexture(const char* path);
+void APIENTRY glDebugOutput(GLenum source,
+	GLenum type,
+	unsigned int id,
+	GLenum severity,
+	GLsizei length,
+	const char* message,
+	const void* userParam);
 
 HWND hwnd;
 // settings
@@ -52,9 +60,12 @@ int main()
 
 	// 初始化glfw
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#if _DEBUG
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+#endif
 #ifdef __APPLE__
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
@@ -84,6 +95,18 @@ int main()
 		return -1;
 	}
 
+#if _DEBUG
+	// 调试输出
+	GLint flags;
+	glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+	if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+	{
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback(glDebugOutput, nullptr);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+	}
+#endif
 
 	//glViewport(0, 0, 800, 600);
 	// 深度测试
@@ -419,4 +442,92 @@ unsigned int LoadTexture(const char* path)
 		stbi_image_free(data);
 	}
 	return textureID;
+}
+
+void APIENTRY glDebugOutput(GLenum source,
+	GLenum type,
+	unsigned int id,
+	GLenum severity,
+	GLsizei length,
+	const char* message,
+	const void* userParam)
+{
+	if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
+	std::wstring msg = s2ws(std::format("---------------\nOpenGL Debug message ({}) : {}\n", id, message));
+	switch (source)
+	{
+	case GL_DEBUG_SOURCE_API:
+		msg += L"Source: API";
+		break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		msg += L"Source: Window System";
+		break;
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		msg += L"Source: Shader Compiler";
+		break;
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		msg += L"Source: Third Party";
+		break;
+	case GL_DEBUG_SOURCE_APPLICATION:
+		msg += L"Source: Application";
+		break;
+	case GL_DEBUG_SOURCE_OTHER:
+		msg += L"Source: Other";
+		break;
+	default:
+		break;
+	}
+	msg += L"\n";
+	switch (type)
+	{
+	case GL_DEBUG_TYPE_ERROR:
+		msg += L"Type: Error";
+		break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		msg += L"Type: Deprecated Behaviour";
+		break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		msg += L"Type: Undefined Behaviour";
+		break;
+	case GL_DEBUG_TYPE_PORTABILITY:
+		msg += L"Type: Portability";
+		break;
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		msg += L"Type: Performance";
+		break;
+	case GL_DEBUG_TYPE_MARKER:
+		msg += L"Type: Marker";
+		break;
+	case GL_DEBUG_TYPE_PUSH_GROUP:
+		msg += L"Type: Push Group";
+		break;
+	case GL_DEBUG_TYPE_POP_GROUP:
+		msg += L"Type: Pop Group";
+		break;
+	case GL_DEBUG_TYPE_OTHER:
+		msg += L"Type: Other";
+		break;
+	default:
+		break;
+	}
+	msg += L"\n";
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_HIGH:
+		msg += L"Severity: high";
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		msg += L"Severity: medium";
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		msg += L"Severity: low";
+		break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		msg += L"Severity: notification";
+		break;
+	default:
+		break;
+	}
+	msg += L"\n\n";
+	std::cout << ws2s(msg);
 }
