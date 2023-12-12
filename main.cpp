@@ -320,6 +320,18 @@ glm::vec3 pointLightPositions[] = {
 	glm::vec3(-4.0f,  2.0f, -12.0f),
 	glm::vec3(0.0f,  0.0f, -3.0f)
 };
+glm::vec3 pointLightColors[] = {
+	glm::vec3(1.0f, 0.6f, 0.0f),
+	glm::vec3(0.0f, 1.0f, 0.0f),
+	glm::vec3(0.0f, 0.0f, 1.0f),
+	glm::vec3(1.0f, 1.0f, 1.0f),
+};
+float pointLightIntensities[] = {
+	0.5f,
+	0.3f,
+	1.0f,
+	0.6f
+};
 void Render()
 {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -351,6 +363,7 @@ void Render()
 		pCubeShader->set((preString + ".ambient").c_str(), glm::vec3(0.05f, 0.05f, 0.05f));
 		pCubeShader->set((preString + ".diffuse").c_str(), glm::vec3(0.8f, 0.8f, 0.8f));
 		pCubeShader->set((preString + ".specular").c_str(), glm::vec3(1.0f, 1.0f, 1.0f));
+		pCubeShader->set((preString + ".color").c_str(), pointLightColors[i]);
 	}
 	// พÛนโ
 	pCubeShader->set("spotLight.position", cameraPos);
@@ -405,6 +418,8 @@ void Render()
 		model = glm::translate(model, pointLightPositions[i]);
 		model = glm::scale(model, glm::vec3(0.2f));
 		pLightShader->set("model", model);
+		pLightShader->set("lightColor", pointLightColors[i]);
+
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
 #if _DEBUG
