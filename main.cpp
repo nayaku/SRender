@@ -13,6 +13,7 @@
 #include "FPSMeter.h"
 #include <sys/timeb.h>
 #include "timmer.h"
+#include <format>
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -57,7 +58,6 @@ int main()
 #ifdef __APPLE__
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-
 	// 创建窗口
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "SRender", NULL, NULL);
 	if (window == NULL)
@@ -68,8 +68,6 @@ int main()
 	}
 	hwnd = glfwGetWin32Window(window);
 
-
-
 	// 显示窗口
 	glfwMakeContextCurrent(window);
 	// 捕获鼠标
@@ -78,7 +76,6 @@ int main()
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-
 	// GLAD初始化
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -86,6 +83,7 @@ int main()
 		glfwTerminate();
 		return -1;
 	}
+
 
 	//glViewport(0, 0, 800, 600);
 	// 深度测试
@@ -290,6 +288,12 @@ glm::vec3 cubePositions[] = {
 	glm::vec3(1.5f,  0.2f, -1.5f),
 	glm::vec3(-1.3f,  1.0f, -1.5f)
 };
+glm::vec3 pointLightPositions[] = {
+	glm::vec3(0.7f,  0.2f,  2.0f),
+	glm::vec3(2.3f, -3.3f, -4.0f),
+	glm::vec3(-4.0f,  2.0f, -12.0f),
+	glm::vec3(0.0f,  0.0f, -3.0f)
+};
 void Render()
 {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -298,20 +302,42 @@ void Render()
 
 	// 激活着色器
 	pCubeShader->use();
-	pCubeShader->set("light.position", cameraPos);
-	pCubeShader->set("light.direction", cameraFront);
-	pCubeShader->set("light.cutOff", glm::cos(glm::radians(12.5f)));
-	pCubeShader->set("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+
 	pCubeShader->set("viewPos", cameraPos);
-
-	pCubeShader->set("light.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
-	pCubeShader->set("light.diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
-	pCubeShader->set("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-	pCubeShader->set("light.constant", 1.0f);
-	pCubeShader->set("light.linear", 0.09f);
-	pCubeShader->set("light.quadratic", 0.032f);
-
 	pCubeShader->set("material.shininess", 32.0f);
+
+	// 太阳光
+	pCubeShader->set("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+	pCubeShader->set("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+	pCubeShader->set("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
+	pCubeShader->set("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+
+	// 点光
+	pCubeShader->set("pointLightNum", 4);
+	for (unsigned int i = 0; i < 4; i++)
+	{
+		std::string preString = std::format("pointLights[{}]", i);
+		auto w = preString + ".position";
+		pCubeShader->set((preString + ".position").c_str(), pointLightPositions[i]);
+		pCubeShader->set((preString + ".constant").c_str(), 1.0f);
+		pCubeShader->set((preString + ".linear").c_str(), 0.09f);
+		pCubeShader->set((preString + ".quadratic").c_str(), 0.032f);
+		pCubeShader->set((preString + ".ambient").c_str(), glm::vec3(0.05f, 0.05f, 0.05f));
+		pCubeShader->set((preString + ".diffuse").c_str(), glm::vec3(0.8f, 0.8f, 0.8f));
+		pCubeShader->set((preString + ".specular").c_str(), glm::vec3(1.0f, 1.0f, 1.0f));
+	}
+	// 聚光
+	pCubeShader->set("spotLight.position", cameraPos);
+	pCubeShader->set("spotLight.direction", cameraFront);
+	pCubeShader->set("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+	pCubeShader->set("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+	pCubeShader->set("spotLight.constant", 1.0f);
+	pCubeShader->set("spotLight.linear", 0.09f);
+	pCubeShader->set("spotLight.quadratic", 0.032f);
+	pCubeShader->set("spotLight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
+	pCubeShader->set("spotLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
+	pCubeShader->set("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -343,16 +369,20 @@ void Render()
 	}
 
 	// 渲染灯
-	//pLightShader->use();
-	//pCubeShader->set("projection", projection);
-	//pCubeShader->set("view", view);
-	//model = glm::mat4(1.0f);
-	//model = glm::translate(model, lightPos);
-	//model = glm::scale(model, glm::vec3(0.2f));
-	//pLightShader->set("model", model);
+	pLightShader->use();
+	pLightShader->set("projection", projection);
+	pLightShader->set("view", view);
+	glBindVertexArray(lightCubeVAO);
+	for (unsigned int i = 0; i < 4; i++)
+	{
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, pointLightPositions[i]);
+		model = glm::scale(model, glm::vec3(0.2f));
+		pLightShader->set("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
+	int e = glGetError();
 
-	//glBindVertexArray(lightCubeVAO);
-	//glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 unsigned int LoadTexture(const char* path)
 {
