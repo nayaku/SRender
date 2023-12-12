@@ -82,6 +82,7 @@ void Shader::Build()
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
 		wprintf(L"顶点着色器编译失败！\n");
 		wprintf(L"%s\n", GetWC(infoLog));
+		exit(-1);
 	}
 
 	// 片段着色器
@@ -95,6 +96,7 @@ void Shader::Build()
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		wprintf(L"片段着色器编译失败！\n");
 		wprintf(L"%s\n", GetWC(infoLog));
+		exit(-1);
 	}
 
 	// 链接
@@ -109,6 +111,7 @@ void Shader::Build()
 		glGetShaderInfoLog(ID, 512, NULL, infoLog);
 		wprintf(L"链接着色器编译失败！\n");
 		wprintf(L"%s\n", GetWC(infoLog));
+		exit(-1);
 	}
 
 	// 删除

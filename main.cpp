@@ -15,12 +15,16 @@
 #include "timmer.h"
 #include <format>
 #include "EncodeTool.h"
+#define GL_STACK_OVERFLOW 0x0503
+#define GL_STACK_UNDERFLOW 0x0504
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void build();
 void Render();
 unsigned int LoadTexture(const char* path);
+GLenum glCheckError_(const char* file, int line);
+#define glCheckError() glCheckError_(__FILE__, __LINE__) 
 void APIENTRY glDebugOutput(GLenum source,
 	GLenum type,
 	unsigned int id,
@@ -96,6 +100,7 @@ int main()
 	}
 
 #if _DEBUG
+	glGetError();
 	// µ÷ÊÔÊä³ö
 	GLint flags;
 	glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -218,8 +223,6 @@ void processInput(GLFWwindow* window)
 		cameraPos += cameraUp * cameraSpeed;
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 		cameraPos -= cameraUp * cameraSpeed;
-
-
 }
 
 void build()
@@ -404,7 +407,9 @@ void Render()
 		pLightShader->set("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
-	int e = glGetError();
+#if _DEBUG
+	glCheckError();
+#endif
 
 }
 unsigned int LoadTexture(const char* path)
@@ -443,6 +448,29 @@ unsigned int LoadTexture(const char* path)
 	}
 	return textureID;
 }
+
+GLenum glCheckError_(const char* file, int line)
+{
+	GLenum errorCode;
+	while ((errorCode = glGetError()) != GL_NO_ERROR)
+	{
+		std::string error;
+		switch (errorCode)
+		{
+		case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
+		case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
+		case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
+		case GL_STACK_OVERFLOW:                error = "STACK_OVERFLOW"; break;
+		case GL_STACK_UNDERFLOW:               error = "STACK_UNDERFLOW"; break;
+		case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+		}
+		std::wstring msg = s2ws(std::format("{} | {} ({})", error, file, line));
+		MessageBox(NULL, msg.c_str(), L"OpenGL Error", MB_OK | MB_ICONEXCLAMATION);
+	}
+	return errorCode;
+}
+#define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
 void APIENTRY glDebugOutput(GLenum source,
 	GLenum type,
