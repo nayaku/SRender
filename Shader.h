@@ -8,6 +8,7 @@ public:
 	unsigned int ID;
 
 	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
+	~Shader();
 	void use();
 	void set(const std::string& name, bool value) const;
 	void set(const std::string& name, int value) const;

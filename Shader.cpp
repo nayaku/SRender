@@ -12,6 +12,11 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 	Build();
 }
 
+Shader::~Shader()
+{
+	glDeleteProgram(ID);
+}
+
 void Shader::use()
 {
 	glUseProgram(ID);
@@ -49,8 +54,8 @@ void Shader::Load(const GLchar* vertexPath, const GLchar* fragmentPath)
 	std::stringstream vsStream, fsStream;
 	try
 	{
-		vsFile.open(vertexPath);
-		fsFile.open(fragmentPath);
+		vsFile.open(vertexPath, std::ifstream::in);
+		fsFile.open(fragmentPath, std::ifstream::in);
 		vsStream << vsFile.rdbuf();
 		fsStream << fsFile.rdbuf();
 		vsFile.close();
@@ -65,6 +70,30 @@ void Shader::Load(const GLchar* vertexPath, const GLchar* fragmentPath)
 	fragmentShaderSource = fsStream.str();
 }
 
+static void checkCompileErrors(GLuint shader, const std::string& type)
+{
+	GLint success;
+	GLchar infoLog[1024];
+	if (type != "PROGRAM")
+	{
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+		if (!success)
+			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+	}
+	else
+	{
+		glGetProgramiv(shader, GL_LINK_STATUS, &success);
+		if (!success)
+			glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+	}
+	if (!success) {
+		std::wcout << L"±àÒë´íÎó£º" << s2ws(type) << std::endl;
+		std::wcout << L"ÐÅÏ¢£º" << s2ws(infoLog) << std::endl;
+		exit(-1);
+	}
+	
+}
+
 void Shader::Build()
 {
 	const char* vertexShaderSource = this->vertexShaderSource.c_str();
@@ -73,46 +102,20 @@ void Shader::Build()
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
-	// ´íÎóÅÐ¶Ï
-	int success;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		wprintf(L"¶¥µã×ÅÉ«Æ÷±àÒëÊ§°Ü£¡\n");
-		wprintf(L"%s\n", GetWC(infoLog));
-		exit(-1);
-	}
+	checkCompileErrors(vertexShader, "VERTEX");
 
 	// Æ¬¶Î×ÅÉ«Æ÷
 	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 	glCompileShader(fragmentShader);
-	// ´íÎóÅÐ¶Ï
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		wprintf(L"Æ¬¶Î×ÅÉ«Æ÷±àÒëÊ§°Ü£¡\n");
-		wprintf(L"%s\n", GetWC(infoLog));
-		exit(-1);
-	}
+	checkCompileErrors(fragmentShader, "FRAGMENT");
 
 	// Á´½Ó
 	ID = glCreateProgram();
 	glAttachShader(ID, vertexShader);
 	glAttachShader(ID, fragmentShader);
 	glLinkProgram(ID);
-	// ´íÎóÅÐ¶Ï
-	glGetShaderiv(ID, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(ID, 512, NULL, infoLog);
-		wprintf(L"Á´½Ó×ÅÉ«Æ÷±àÒëÊ§°Ü£¡\n");
-		wprintf(L"%s\n", GetWC(infoLog));
-		exit(-1);
-	}
+	checkCompileErrors(ID, "PROGRAM");
 
 	// É¾³ý
 	glDeleteShader(vertexShader);
